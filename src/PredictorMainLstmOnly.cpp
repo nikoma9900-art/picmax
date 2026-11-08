@@ -1,4 +1,4 @@
-﻿#include "PredictorMainLstmOnly.hpp"
+#include "PredictorMainLstmOnly.hpp"
 #include "ArithmeticEncoder.hpp"
 
 PredictorMainLstmOnly::PredictorMainLstmOnly(Shared* const sh) : Predictor(sh) {
@@ -10,7 +10,7 @@ PredictorMainLstmOnly::~PredictorMainLstmOnly() {
 }
 
 uint32_t PredictorMainLstmOnly::p() {
-  LstmModelContainer& lstm = models->lstmModelText(); // use the instance for Text so that loading/saving parameters would work properly
+  LstmModelContainer& lstm = models->lstmModelGeneric();
   lstm.next();
   constexpr uint32_t scale = 1u << ArithmeticEncoder::PRECISION;
   uint32_t p = static_cast<uint32_t>(roundf(lstm.getp() * scale));

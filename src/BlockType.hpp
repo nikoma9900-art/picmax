@@ -12,27 +12,14 @@ enum class BlockType {
   IMAGE8GRAY,
   IMAGE24,
   IMAGE32,
-  AUDIO,
-  AUDIO_LE,
-  EXE,
-  CD,
   ZLIB,
-  BASE64,
   GIF,
   PNG8,
   PNG8GRAY,
   PNG24,
   PNG32,
-  TEXT,
-  TEXT_EOL,
   RLE,
   LZW,
-  DEC_ALPHA,
-  MRB,
-  DBF,
-  BASE85,
-  TAR,
-  TARHDR,
   Count
 };
 
@@ -49,5 +36,3 @@ bool hasInfo(BlockType ft);
 bool hasTransform(BlockType ft, int info);
 
 bool isPNG(BlockType ft);
-
-bool isTEXT(BlockType ft);

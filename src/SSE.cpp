@@ -1,4 +1,4 @@
-﻿#include "SSE.hpp"
+ï»¿#include "SSE.hpp"
 #include "Hash.hpp"
 #include "Utils.hpp"
 
@@ -175,7 +175,7 @@
 //   prB = average of pr0 and APM1s, most of them chained on refined estimates
 //   pr  = ( APMPostA(prA) + APMPostB(prB) ) / 2
 //
-// In the paths that use APM1s (text, generic, executable, 24/32-bit and
+// In the paths that use APM1s (generic and 24/32-bit and
 // palette images), the two branches learn at different speeds. prA comes
 // only from APMs (long memory), while half to three quarters of prB's weight
 // comes from APM1s (short memory). When the data changes, the fast branch
@@ -184,12 +184,6 @@
 // average never loses more than 1 bit to whichever is currently better.
 
 SSE::SSE(Shared* const sh) : shared(sh),
-Text{
-    { /*APM:*/  {sh,1 << 15,20,1023}, {sh,1 << 16,24,1023}, {sh,1 << 16,24,1023}, {sh,1 << 16,24,1023}} , /* APM: contexts, steps */
-    { /*APM1:*/ {sh,256 * 257,7}, {sh,1 << 16,6}, {sh,1 << 16,6}}, /* APM1: contexts, rate */
-    { /*ApmPostA: */ sh,8},
-    { /*ApmPostB: */ sh,8}
-},
 Image{
   // color:
     { { /*APM:*/ {sh,1 << 7,24,1023}, {sh,1 << 16,24,1023}, {sh,1 << 16,24,1023}, {sh,1 << 16,24,1023}},
@@ -214,24 +208,8 @@ Image{
     { /*ApmPostFinal: */ sh,16}
   }
 },
-Audio{
-  { /*APM:*/ {sh,1 << 14,24,1023} },
-  { /*ApmPostA: */ sh,8},
-  { /*ApmPostB: */ sh,8}
-},
 Jpeg{
   { /*APM:*/ {sh,0x1000 + 1,24,1023} },
-  { /*ApmPostA: */ sh,1},
-  { /*ApmPostB: */ sh,1}
-},
-DEC{
-  { /*APM:*/ {sh,25 * 26,20,1023} },
-  { /*ApmPostA: */ sh,8},
-  { /*ApmPostB: */ sh,8}
-},
-x86_64{
-  { /*APM:*/ {sh,1 << 14,20,1023}, {sh,1 << 16,16,1023}, {sh,1 << 16,16,1023} },
-  { /*APM1:*/ {sh,64 * 257,7}, {sh,1 << 16,7}, {sh,1 << 16,7} },
   { /*ApmPostA: */ sh,1},
   { /*ApmPostB: */ sh,1}
 },
@@ -252,12 +230,7 @@ uint32_t SSE::p(const uint32_t pr_orig) {
     INJECT_SHARED_blockType
 
     assert(shared->State.NormalModel.order <= 7);
-  assert(shared->State.WordModel.order <= 31);
-  assert(shared->State.Text.order <= 15);
-
-  assert(shared->State.x86_64.state <= 255);
-  assert(shared->State.Audio <= 255);
-  assert(shared->State.JPEG.state <= 4095 + 1);
+    assert(shared->State.JPEG.state <= 4095 + 1);
 
   assert(shared->State.Image1.ctx12 < (1u << 12));
   assert(shared->State.Image1.shape < (1u << 22));
@@ -281,25 +254,6 @@ uint32_t SSE::p(const uint32_t pr_orig) {
     blockType;
 
   switch (normalizedBlockType) {
-  case BlockType::TEXT:
-  case BlockType::TEXT_EOL: {
-    uint32_t pr0 = Text.APMs[0].p(pr_orig, static_cast<uint32_t>(c0) << 7 | (shared->State.Text.mask & 0x0F) | misses3 << 4); //15
-    uint32_t pr1 = Text.APMs[1].p(pr_orig, finalize64(hash(bpos, misses3 & 3, c4 & 0xFFFF, shared->State.Text.mask >> 4), 16)); //16
-    uint32_t pr2 = Text.APMs[2].p(pr_orig, finalize64(hash(c0, shared->State.Match.expectedByte << 2 | shared->State.Match.length2), 16)); //16
-    uint32_t pr3 = Text.APMs[3].p(pr_orig, finalize64(hash(c0, c4 & 0xFFFF, shared->State.Text.firstLetter), 16)); //16
-
-    uint32_t prA = (pr_orig + pr1 + pr2 + pr3 + 2) >> 2;
-
-    uint32_t pr4 = Text.APM1s[0].p(prA, shared->State.Match.expectedByte + ((shared->State.WordModel.order >> 2) << 5 | shared->State.Match.length2 << 3 | (shared->State.Text.order >> 1)) * 257); //256*257
-    uint32_t pr5 = Text.APM1s[1].p(pr0, finalize64(hash(c0, c4 & 0x00FFFFFF), 16)); //16
-    uint32_t pr6 = Text.APM1s[2].p(pr0, finalize64(hash(c0, c4), 16)); //16
-
-    uint32_t prB = (pr0 + pr4 + pr5 + pr6 + 2) >> 2;
-
-    uint32_t pr = (Text.APMPostA.p(prA, bpos) + Text.APMPostB.p(prB, bpos) + 1) >> 1;
-    return pr;
-    break;
-  }
   case BlockType::IMAGE24:
   case BlockType::IMAGE32: {
     uint32_t plane = shared->State.Image.plane; // 0..3
@@ -369,39 +323,9 @@ uint32_t SSE::p(const uint32_t pr_orig) {
     break;
   }
 //case BlockType::IMAGE4: //TODO
-  case BlockType::AUDIO:
-  case BlockType::AUDIO_LE: {
-    uint32_t pr0 = Audio.APMs[0].p(pr_orig, shared->State.Audio << 6 | static_cast<uint32_t>(bpos) << 3 | misses3); //14
-    uint32_t pr = (Audio.APMPostA.p(pr_orig, bpos) + Audio.APMPostB.p(pr0, bpos) + 1) >> 1;
-    return pr;
-    break;
-  }
   case BlockType::JPEG: {
     uint32_t pr0 = Jpeg.APMs[0].p(pr_orig, shared->State.JPEG.state);
     uint32_t pr = (Jpeg.APMPostA.p(pr_orig, 0) + Jpeg.APMPostB.p(pr0, 0) + 1) >> 1;
-    return pr;
-    break;
-  }
-  case BlockType::DEC_ALPHA: {
-    uint32_t pr0 = DEC.APMs[0].p(pr_orig, (shared->State.DEC.state * 26) + shared->State.DEC.bcount);
-    uint32_t pr = (DEC.APMPostA.p(pr_orig, 0) + DEC.APMPostB.p(pr0, 0) + 1) >> 1;
-    return pr;
-    break;
-  }
-  case BlockType::EXE: {
-    uint32_t pr0 = x86_64.APMs[0].p(pr_orig, shared->State.x86_64.state << 6 | misses3 << 3 | bpos);//14
-    uint32_t pr1 = x86_64.APMs[1].p(pr_orig, shared->State.x86_64.state << 8 | c0); // 16
-    uint32_t pr2 = x86_64.APMs[2].p((pr0 + pr1 + 1) >> 1, finalize64(hash(c4 & 0xFF, bpos, misses3 & 1, shared->State.x86_64.state >> 3), 16)); //16
-
-    uint32_t prA = (pr_orig + pr0 + pr1 + pr2 + 2) >> 2;
-
-    uint32_t pr4 = x86_64.APM1s[0].p(prA, shared->State.Match.expectedByte + (shared->State.NormalModel.order << 3 | shared->State.Match.mode3) * 257); //64*257
-    uint32_t pr5 = x86_64.APM1s[1].p(prA, c0 | (c4 & 0xFF) << 8); //16
-    uint32_t pr6 = x86_64.APM1s[2].p(pr_orig, c0 | (c4 & 0xFF) << 8); //16
-
-    uint32_t prB = (pr0 + pr4 + pr5 + pr6 + 2) >> 2;
-
-    uint32_t pr = (x86_64.APMPostA.p(prA, 0) + x86_64.APMPostB.p(prB, 0) + 1) >> 1;
     return pr;
     break;
   }
@@ -414,8 +338,8 @@ uint32_t SSE::p(const uint32_t pr_orig) {
     uint32_t prA = (pr_orig + pr1 + pr2 + pr3 + 2) >> 2;
 
     uint32_t pr4 = Generic.APM1s[0].p(prA, shared->State.Match.expectedByte + (misses3 << 5 | shared->State.NormalModel.order << 2 | shared->State.Match.length2) * 257); //256*257
-    uint32_t pr5 = Generic.APM1s[1].p(pr0, misses3 << 13 | shared->State.Match.length2 << 11 | (shared->State.WordModel.order >> 2) << 8 | c0); //16
-    uint32_t pr6 = Generic.APM1s[2].p(pr0, (misses3 & 3) << 14 | (bpos >> 1) << 12 | (c4 & 0xFF) << 4 | (static_cast<uint32_t>(shared->State.WordModel.order) >> 1)); //16
+    uint32_t pr5 = Generic.APM1s[1].p(pr0, misses3 << 13 | shared->State.Match.length2 << 11 | (shared->State.NormalModel.order >> 2) << 8 | c0); //16
+    uint32_t pr6 = Generic.APM1s[2].p(pr0, (misses3 & 3) << 14 | (bpos >> 1) << 12 | (c4 & 0xFF) << 4 | (static_cast<uint32_t>(shared->State.NormalModel.order) >> 1)); //16
 
     uint32_t prB = (pr0 + pr4 + pr5 + pr6 + 2) >> 2;
 

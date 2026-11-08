@@ -1,4 +1,4 @@
-# compile paq8px on Ubuntu with cmake
+# compile paqimg on Ubuntu with cmake
 # sudo apt update
 # sudo apt install gcc build-essential cmake
 #------------------------
@@ -6,7 +6,7 @@
 # sudo pacman -Syu
 # sudo pacman -S gcc base-devel cmake
 
-rm -rf CMakeFiles CMakeCache.txt cmake_install.cmake Makefile compile_commands.json paq8px
+rm -rf CMakeFiles CMakeCache.txt cmake_install.cmake Makefile compile_commands.json paqimg
 cmake -G "Unix Makefiles" -DNDEBUG=ON ..
 make -j$(nproc)
 rm -rf CMakeFiles CMakeCache.txt cmake_install.cmake Makefile compile_commands.json

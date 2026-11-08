@@ -1,4 +1,4 @@
-﻿#include "../MixerFactory.hpp"
+#include "../MixerFactory.hpp"
 #include "../Models.hpp"
 
 class ContextModelJpeg : public IContextModel
@@ -48,23 +48,11 @@ public:
 
     mNoJpeg = mf->createMixer(
       1 + //bias
-      NormalModel::MIXERINPUTS + MatchModel::MIXERINPUTS +
-      SparseMatchModel::MIXERINPUTS +
-      SparseModel::MIXERINPUTS + SparseBitModel::MIXERINPUTS + RecordModel::MIXERINPUTS + CharGroupModel::MIXERINPUTS +
-      TextModel::MIXERINPUTS + WordModel::MIXERINPUTS_BIN +
-      LinearPredictionModel::MIXERINPUTS
+      NormalModel::MIXERINPUTS + MatchModel::MIXERINPUTS
       ,
-      NormalModel::MIXERCONTEXTS_PRE + MatchModel::MIXERCONTEXTS +
-      SparseMatchModel::MIXERCONTEXTS +
-      SparseModel::MIXERCONTEXTS + SparseBitModel::MIXERCONTEXTS + RecordModel::MIXERCONTEXTS + CharGroupModel::MIXERCONTEXTS +
-      TextModel::MIXERCONTEXTS + WordModel::MIXERCONTEXTS +
-      LinearPredictionModel::MIXERCONTEXTS
+      NormalModel::MIXERCONTEXTS_PRE + MatchModel::MIXERCONTEXTS
       ,
-      NormalModel::MIXERCONTEXTSETS_PRE + MatchModel::MIXERCONTEXTSETS +
-      SparseMatchModel::MIXERCONTEXTSETS +
-      SparseModel::MIXERCONTEXTSETS + SparseBitModel::MIXERCONTEXTSETS + RecordModel::MIXERCONTEXTSETS + CharGroupModel::MIXERCONTEXTSETS +
-      TextModel::MIXERCONTEXTSETS + WordModel::MIXERCONTEXTSETS +
-      LinearPredictionModel::MIXERCONTEXTSETS
+      NormalModel::MIXERCONTEXTSETS_PRE + MatchModel::MIXERCONTEXTSETS
       ,
       0
     );
@@ -103,22 +91,7 @@ public:
         break;
       }
       case JpegResult::NoJpeg: {
-        SparseMatchModel& sparseMatchModel = models->sparseMatchModel();
-        sparseMatchModel.mix(*m);
-        SparseBitModel& sparseBitModel = models->sparseBitModel();
-        sparseBitModel.mix(*m);
-        SparseModel& sparseModel = models->sparseModel();
-        sparseModel.mix(*m);
-        RecordModel& recordModel = models->recordModel();
-        recordModel.mix(*m);
-        CharGroupModel& charGroupModel = models->charGroupModel();
-        charGroupModel.mix(*m);
-        TextModel& textModel = models->textModel();
-        textModel.mix(*m);
-        WordModel& wordModel = models->wordModel();
-        wordModel.mix(*m);
-        LinearPredictionModel& linearPredictionModel = models->linearPredictionModel();
-        linearPredictionModel.mix(*m);
+        // nothing extra to mix: the generic model set is not part of this image compressor
         break;
       }
     }

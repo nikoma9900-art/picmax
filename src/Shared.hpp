@@ -28,16 +28,8 @@ private:
   UpdateBroadcaster updateBroadcaster;
 
   // compression/decompression options (these flags are stored in the archive)
-  static constexpr uint8_t OPTION_MULTIPLE_FILE_MODE = 1;
-  static constexpr uint8_t OPTION_TRAINEXE = 2;
-  static constexpr uint8_t OPTION_TRAINTXT = 4;
-  static constexpr uint8_t OPTION_SKIPRGB = 16;
-  static constexpr uint8_t OPTION_USELSTM = 32;
-
-  // block detection related options (these flags are not stored in the archive)
-  static constexpr uint8_t OPTION_BRUTEFORCE_DEFLATE_DETECTION = 1U;
-  static constexpr uint8_t OPTION_DETECT_BLOCK_AS_BINARY = 2U;
-  static constexpr uint8_t OPTION_DETECT_BLOCK_AS_TEXT = 4U;
+  static constexpr uint8_t OPTION_SKIPRGB = 1;
+  static constexpr uint8_t OPTION_USELSTM = 2;
 
 public:
 
@@ -45,7 +37,6 @@ public:
 
   RingBuffer<uint8_t> buf; /**< Rotating input queue set by Predictor */
   uint8_t options = 0; /**< Compression options (bit field) */
-  uint8_t detectionOptions = 0; /**< Block detection related options (bit field) */
   SIMDType chosenSimd = SIMDType::SIMD_NONE; /**< default value, will be overridden by the CPU dispatcher, and may be overridden from the command line */
   uint8_t level = 0; /**< level=0: no compression (only transformations), level=1..12 compress using less..more RAM */
   uint64_t mem = 0; /**< pre-calculated value of 65536 * 2^level */
@@ -53,26 +44,12 @@ public:
   bool toScreen = true;
 
   // Getters
-  bool GetOptionMultipleFileMode() const { return (options & OPTION_MULTIPLE_FILE_MODE) != 0; }
-  bool GetOptionTrainExe() const { return (options & OPTION_TRAINEXE) != 0; }
-  bool GetOptionTrainTxt() const { return (options & OPTION_TRAINTXT) != 0; }
   bool GetOptionSkipRGB() const { return (options & OPTION_SKIPRGB) != 0; }
   bool GetOptionUseLSTM() const { return (options & OPTION_USELSTM) != 0; }
 
-  bool GetOptionBruteforceDeflateDetection() const { return (detectionOptions & OPTION_BRUTEFORCE_DEFLATE_DETECTION) != 0; }
-  bool GetOptionDetectBlockAsBinary() const { return (detectionOptions & OPTION_DETECT_BLOCK_AS_BINARY) != 0; }
-  bool GetOptionDetectBlockAsText() const { return (detectionOptions & OPTION_DETECT_BLOCK_AS_TEXT) != 0; }
-
   // Setters
-  void SetOptionMultipleFileMode() { options |= OPTION_MULTIPLE_FILE_MODE; }
-  void SetOptionTrainExe() { options |= OPTION_TRAINEXE; }
-  void SetOptionTrainTxt() { options |= OPTION_TRAINTXT; }
   void SetOptionSkipRGB() { options |= OPTION_SKIPRGB; }
   void SetOptionUseLSTM() { options |= OPTION_USELSTM; }
-
-  void SetOptionBruteforceDeflateDetection() { detectionOptions |= OPTION_BRUTEFORCE_DEFLATE_DETECTION; }
-  void SetOptionDetectBlockAsBinary() { detectionOptions |= OPTION_DETECT_BLOCK_AS_BINARY; }
-  void SetOptionDetectBlockAsText() { detectionOptions |= OPTION_DETECT_BLOCK_AS_TEXT; }
 
   struct
   {
@@ -154,55 +131,11 @@ public:
       uint8_t match;     //the match models' verdict (0-32): 0 = no match, else 1 + the length of the best match (bits 3-4), the pixel it expects (bit 2), the matches disagree (bit 1), its source was identical (bit 0)
     } Image1{};
 
-    //AudioModel
-    uint8_t Audio{};
-
     //JpegModel
     struct
     { // used by the SSE stage
       uint16_t state;  // 0: not predicting this bit; otherwise 1 + a direct 12-bit context
     } JPEG;
-
-    //SparseMatchModel
-    //SparseModel
-    //SparseBitModel
-    //ChartModel
-    //RecordModel
-    //CharGroupModel
-
-    //TextModel
-    struct
-    {
-      uint8_t characterGroup; //used by RecordModel, TextModel - Quantized partial byte as ASCII group
-      uint8_t firstLetter; //used by SSE stage
-      uint8_t mask; //used by SSE stage
-      uint8_t order; //used by SSE stage; 0-15
-    } Text{};
-
-    //WordModel
-    struct
-    {
-      uint8_t order; //used by SSE stage; 0-31
-    } WordModel{};
-
-    //IndirectModel
-    //Dmcforest
-    //NestModel
-    //XMLModel
-    //LinearPredictionModel
-
-    //ExeModel
-    struct
-    {
-      uint8_t state; // used by SSE stage
-    } x86_64;
-
-    //DECAlphaModel
-    struct
-    {
-      uint8_t state; // used by SSE stage
-      uint8_t bcount; // used by SSE stage
-    } DEC;
 
   } State{};
 

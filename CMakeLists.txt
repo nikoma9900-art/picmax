@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
-project(paq8px LANGUAGES CXX C)
+project(paqimg LANGUAGES CXX C)
 set(CMAKE_POLICY_DEFAULT_CMP0009 NEW)  # Suppress GLOB warning
 
 # --------------------------------------
 # Build options
 # --------------------------------------
 option(NATIVECPU "Whether to build for your CPU (vs. general public)" OFF)
-option(DISABLE_ZLIB "Disable zlib re-compression support" OFF)
 option(NDEBUG "Suppress asserts and array bound checks" ON)
 option(ENABLE_WARNINGS "Enable compiler warnings ('diag' mode)" OFF)
 
@@ -64,45 +63,33 @@ if (NDEBUG)
 endif()
 
 # --------------------------------------
-# Zlib handling
+# Zlib (always built, needed for PNG/ZIP deflate detection and re-compression)
 # --------------------------------------
-if (DISABLE_ZLIB)
-    message(STATUS "Zlib disabled by user")
-    add_compile_definitions(DISABLE_ZLIB)
-else()
-    message(STATUS "Building bundled zlib")
-    
-    # Define zlib source directory
-    set(ZLIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/zlib")
-    
-    # Collect zlib sources
-    set(ZLIB_SOURCES
-        ${ZLIB_DIR}/adler32.c
-        ${ZLIB_DIR}/crc32.c
-        ${ZLIB_DIR}/deflate.c
-        ${ZLIB_DIR}/gzlib.c
-        ${ZLIB_DIR}/inffast.c
-        ${ZLIB_DIR}/inflate.c
-        ${ZLIB_DIR}/inftrees.c
-        ${ZLIB_DIR}/trees.c
-        ${ZLIB_DIR}/zutil.c
-    )
-    
-    # Create static zlib library
-    add_library(zlib_bundled STATIC ${ZLIB_SOURCES})
-    target_compile_options(zlib_bundled PRIVATE -fexceptions ${SAFEFP_FLAGS})
+message(STATUS "Building bundled zlib")
 
-    # Add unistd.h for Linux (provides lseek declaration)
-    if (UNIX)
-        target_compile_options(zlib_bundled PRIVATE -include unistd.h)
-    endif()
+set(ZLIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/zlib")
 
-    target_include_directories(zlib_bundled PUBLIC ${ZLIB_DIR})
-    
-    # Set variables for consistency
-    set(ZLIB_LIBRARIES zlib_bundled)
-    set(ZLIB_INCLUDE_DIRS ${ZLIB_DIR})
+set(ZLIB_SOURCES
+    ${ZLIB_DIR}/adler32.c
+    ${ZLIB_DIR}/crc32.c
+    ${ZLIB_DIR}/deflate.c
+    ${ZLIB_DIR}/gzlib.c
+    ${ZLIB_DIR}/inffast.c
+    ${ZLIB_DIR}/inflate.c
+    ${ZLIB_DIR}/inftrees.c
+    ${ZLIB_DIR}/trees.c
+    ${ZLIB_DIR}/zutil.c
+)
+
+add_library(zlib_bundled STATIC ${ZLIB_SOURCES})
+target_compile_options(zlib_bundled PRIVATE -fexceptions ${SAFEFP_FLAGS})
+
+# Add unistd.h for Linux (provides lseek declaration)
+if (UNIX)
+    target_compile_options(zlib_bundled PRIVATE -include unistd.h)
 endif()
+
+target_include_directories(zlib_bundled PUBLIC ${ZLIB_DIR})
 
 # --------------------------------------
 # Collect source files
@@ -115,7 +102,6 @@ set(SOURCE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/file"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/filter"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/model"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/text"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/lstm"
 )
 
@@ -127,26 +113,24 @@ endforeach()
 # --------------------------------------
 # Create executable
 # --------------------------------------
-add_executable(paq8px ${PAQ_SOURCES})
+add_executable(paqimg ${PAQ_SOURCES})
 
 # Disable RTTI
-target_compile_options(paq8px PRIVATE -fno-rtti)
+target_compile_options(paqimg PRIVATE -fno-rtti)
 
-# Link Zlib if available
-if (NOT DISABLE_ZLIB)
-    target_include_directories(paq8px PRIVATE ${ZLIB_INCLUDE_DIRS})
-    target_link_libraries(paq8px PRIVATE ${ZLIB_LIBRARIES})
-endif()
+# Link Zlib
+target_include_directories(paqimg PRIVATE ${ZLIB_DIR})
+target_link_libraries(paqimg PRIVATE zlib_bundled)
 
 # Static linking with GCC on Windows
 if (MINGW)
-    target_link_options(paq8px PRIVATE -static)
+    target_link_options(paqimg PRIVATE -static)
 endif()
 
 # Strip symbols in release builds
 if (CMAKE_BUILD_TYPE STREQUAL "Release" OR NDEBUG)
     if (NOT MSVC)
-        target_link_options(paq8px PRIVATE -s)
+        target_link_options(paqimg PRIVATE -s)
     endif()
 endif()
 
@@ -157,12 +141,12 @@ include(CheckIPOSupported)
 check_ipo_supported(RESULT supported OUTPUT error)
 if (supported)
     message(STATUS "IPO / LTO enabled")
-    set_property(TARGET paq8px PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-    
+    set_property(TARGET paqimg PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+
     # Set MAKE for LTO
     if (WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         set(CMAKE_CXX_COMPILER_LAUNCHER "")
-        set(ENV{MAKE} "mingw32-make")
+        set (ENV{MAKE} "mingw32-make")
     endif()
 else()
     message(STATUS "IPO / LTO not supported: <${error}>")
@@ -173,7 +157,6 @@ endif()
 # --------------------------------------
 message(STATUS "Build configuration:")
 message(STATUS "  NATIVECPU: ${NATIVECPU}")
-message(STATUS "  DISABLE_ZLIB: ${DISABLE_ZLIB}")
 message(STATUS "  NDEBUG: ${NDEBUG}")
 message(STATUS "  ENABLE_WARNINGS: ${ENABLE_WARNINGS}")
 message(STATUS "  Architecture: ${CMAKE_SYSTEM_PROCESSOR}")

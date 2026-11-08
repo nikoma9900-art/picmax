@@ -1,9 +1,9 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-rem * This script builds a paq8px executable for all x86/x64 CPUs with runtime SIMD dispatch.
+rem * This script builds a paqimg executable for all x86/x64 CPUs with runtime SIMD dispatch.
 rem * Requirements: MinGW-w64 (set path below)
-rem * Output: paq8px.exe, with errors and/or warnings in _error1_zlib.txt and/or in _error2_paq.txt if compilation fails.
+rem * Output: paqimg.exe, with errors and/or warnings in _error1_zlib.txt and/or in _error2_paq.txt if compilation fails.
 rem * Usage: %0 [diag] (optional: 'diag' enables warnings during build and asserts during runtime).
 
 rem * Set your mingw-w64 path below
@@ -40,12 +40,13 @@ set options=-DNDEBUG -I%zpath% -O3 %safefp% -m64 -march=nocona -mtune=generic -f
 rem * Override for debug build if specified
 if /i "%1"=="diag" (
   set options=-Wall -I%zpath% -O3 %safefp% -m64 -march=nocona -mtune=generic -flto=auto -floop-strip-mine -funroll-loops -ftree-vectorize -fgcse-sm -falign-loops=16
-  echo Building with warnings and activating asserts during runtime.
+  echo
+ Building with warnings and activating asserts during runtime.
   echo When done, see warnings in _error1_zlib.txt and _error2_paq.txt
 )
 
 rem * Clean previous build artifacts
-del /q _error1_zlib.txt _error2_paq.txt paq8px.exe *.o _sources.txt 2>nul
+del /q _error1_zlib.txt _error2_paq.txt paqimg.exe *.o _sources.txt 2>nul
 
 rem * Compile zlib sources
 echo Compiling zlib sources...
@@ -60,7 +61,7 @@ rem * Build response file with quoted full paths to *.cpp files
 echo Building source file list...
 > _sources.txt (
   rem Process .cpp files in src directory and specified subfolders
-  for %%D in (src src/file src/filter src/model src/text src/lstm) do (
+  for %%D in (src src/file src/filter src/model src/lstm) do (
       for /f "delims=" %%F in ('dir /b /a:-d "%parent_dir%\%%D\*.cpp" 2^>nul') do (
       rem Convert relative path to full path and quote it
       pushd "%parent_dir%\%%D"
@@ -71,15 +72,15 @@ echo Building source file list...
 )
 
 
-echo Compiling and linking paq8px...
-g++.exe -s -static -fno-rtti -std=gnu++17 %options% %zobj% @_sources.txt -o paq8px.exe 2>_error2_paq.txt
+echo Compiling and linking paqimg...
+g++.exe -s -static -fno-rtti -std=gnu++17 %options% %zobj% @_sources.txt -o paqimg.exe 2>_error2_paq.txt
 if %ERRORLEVEL% neq 0 (
-  echo ERROR: paq8px compilation failed. See _error2_paq.txt for details.
+  echo ERROR: paqimg compilation failed. See _error2_paq.txt for details.
   pause
   exit /b 1
 )
 
-echo Build successful: paq8px.exe created.
+echo Build successful: paqimg.exe created.
 
 if exist _error1_zlib.txt findstr /v "^$" _error1_zlib.txt >nul && (
   echo NOTE: Issues found in _error1_zlib.txt.

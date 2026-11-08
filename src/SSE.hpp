@@ -14,12 +14,6 @@ private:
   Shared* const shared;
   struct
   {
-    APM APMs[4];
-    APM1 APM1s[3];
-    APMPost APMPostA, APMPostB;
-  } Text;
-  struct
-  {
     struct
     {
       APM APMs[4];
@@ -42,23 +36,7 @@ private:
   {
     APM APMs[1];
     APMPost APMPostA, APMPostB;
-  } Audio;
-  struct
-  {
-    APM APMs[1];
-    APMPost APMPostA, APMPostB;
   } Jpeg;
-  struct
-  {
-    APM APMs[1];
-    APMPost APMPostA, APMPostB;
-  } DEC;
-  struct
-  {
-    APM APMs[3];
-    APM1 APM1s[3];
-    APMPost APMPostA, APMPostB;
-  } x86_64;
   struct
   {
     APM APMs[4];
