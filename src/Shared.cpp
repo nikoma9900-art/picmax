@@ -1,4 +1,4 @@
-ï»¿#include "Shared.hpp"
+#include "Shared.hpp"
 #include "ArithmeticEncoder.hpp"
 
 /*
@@ -65,7 +65,8 @@ void Shared::reset() {
   State.c0 = 1;
 }
 
-UpdateBroadcaster *Shared::GetUpdateBroadcaster() const {
+UpdateBroadcaster *Shared::GetUpdateBroadcast
+er() const {
   UpdateBroadcaster* updater = const_cast<UpdateBroadcaster*>(&updateBroadcaster);
   return updater;
 }

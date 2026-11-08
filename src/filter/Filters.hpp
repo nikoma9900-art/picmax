@@ -1,4 +1,4 @@
-ï»¿#pragma once
+#pragma once
 
 #include "../Array.hpp"
 #include "../BlockType.hpp"
@@ -55,7 +55,8 @@
 //
 // For each type X there are the following 2 functions:
 //
-//   void encode_X(File *in, File *out, int n, ...);
+//   void encode_X(File *in, File 
+*out, int n, ...);
 //
 // encodes n bytes from in to out.
 //
@@ -115,7 +116,8 @@ static bool isTiffGrayscaleColorMap(File* in, uint64_t fileOffset, int nEntries)
     if (lo == EOF || hi == EOF) return false;
     rHi[e] = static_cast<uint8_t>(hi);
   }
-  for (int e = 0; e < nEntries; ++e) {
+  fo
+r (int e = 0; e < nEntries; ++e) {
     int lo = in->getchar(); int hi = in->getchar();
     if (lo == EOF || hi == EOF) return false;
     if (static_cast<uint8_t>(hi) != rHi[e]) return false;
@@ -193,7 +195,8 @@ static DetectionInfo detect(File *in, uint64_t blockSize, const TransformOptions
   int nColors = 0;
   
   // For RGB detection
-  uint64_t rgbi = 0;
+  
+uint64_t rgbi = 0;
   int rgbx = 0;
   int rgby = 0; 
   
@@ -263,7 +266,8 @@ static DetectionInfo detect(File *in, uint64_t blockSize, const TransformOptions
     const int s = tiffStrips.next++;
     detectionInfo.Type = BlockType::LZW;
     detectionInfo.DataInfo = tiffStrips.info;
-    detectionInfo.DataStart = tiffStrips.offsets[s];
+    detectionInfo.DataStart = tiffStrips.offs
+ets[s];
     detectionInfo.DataLength = tiffStrips.sizes[s];
     if (tiffStrips.next >= tiffStrips.count)
       tiffStrips.next = 0; // all strips emitted, reset
@@ -315,7 +319,8 @@ static DetectionInfo detect(File *in, uint64_t blockSize, const TransformOptions
         png *= static_cast<int>(lastChunk != 0x49454E44 /*IEND*/);
         if (lastChunk == 0x504C5445 /*PLTE*/) {
           png *= static_cast<int>(buf1 % 3 == 0);
-          pnggray = static_cast<int>((png != 0) && isGrayscalePalette(in, buf1 / 3));
+          pnggray = static_cast<int>((pn
+g != 0) && isGrayscalePalette(in, buf1 / 3));
         }
       }
     }
@@ -369,7 +374,8 @@ static DetectionInfo detect(File *in, uint64_t blockSize, const TransformOptions
               strm.avail_out = 1 << 16;
               ret = inflate(&strm, Z_FINISH);
             } while (strm.avail_out == 0 && ret == Z_BUF_ERROR);
-            if (ret == Z_STREAM_END)
+            if (ret == Z_ST
+REAM_END)
               streamLength = strm.total_in;
             if (ret != Z_BUF_ERROR)
               break;
@@ -411,7 +417,8 @@ static DetectionInfo detect(File *in, uint64_t blockSize, const TransformOptions
       if (app == i && (buf0 >> 24) == 0xff && ((buf0 >> 16) & 0xff) > 0xc1 && ((buf0 >> 16) & 0xff) < 0xff) {
         app = i + (buf0 & 0xffff) + 2;
       }
-      if (app < i && (buf1 & 0xff) == 0xff && (buf0 & 0xfe0000ff) == 0xc0000008) {
+      if (app < i && (buf1 & 0xff) == 0
+xff && (buf0 & 0xfe0000ff) == 0xc0000008) {
         sof = i;
       }
       if ((sof != 0) && sof > soi && i - sof < 0x1000 && (buf0 & 0xffff) == 0xffda) {
@@ -467,6 +474,7 @@ static DetectionInfo detect(File *in, uint64_t blockSize, const TransformOptions
         imgbpp = bswap(buf0 << 16), bmpi = ((imgbpp != 1 && imgbpp != 4 && imgbpp != 8 && imgbpp != 24 && imgbpp != 32) ? (dibi = 0)
           : bmpi); //color depth
       }
+
       else if (p == 30 + 4) {
         bmpi = ((buf0 != 0) ? (dibi = 0) : bmpi); //compression method must be: BI_RGB (uncompressed)
       }
@@ -509,7 +517,8 @@ static DetectionInfo detect(File *in, uint64_t blockSize, const TransformOptions
           }
           else if (imgbpp == 8) {
             blockType = BlockType::IMAGE8;
-            widthInBytes = (bmpx + 3) & -4;
+            widthInBytes = (bmpx
+ + 3) & -4;
           }
           else if (imgbpp == 24) {
             blockType = BlockType::IMAGE24;
@@ -551,7 +560,8 @@ static DetectionInfo detect(File *in, uint64_t blockSize, const TransformOptions
           } // too small - not worthy to use the image models
           else {
             detectionInfo.IMG_DET(start, blockType, headerPos, headerSize, widthInBytes, bmpy);
-            if (detectionInfo.SizeVerificationPassed(start + n))
+            if (detectionInfo.SizeVerificationPassed(start + n
+))
               return detectionInfo;
           }
         }
@@ -607,7 +617,8 @@ static DetectionInfo detect(File *in, uint64_t blockSize, const TransformOptions
               }
             }
           }
-          else if (c == 0x20 && (pgmw == 0)) {
+      
+    else if (c == 0x20 && (pgmw == 0)) {
             s = 1;
           }
           else if (c == 0x0a && (pgmh == 0)) {
@@ -670,6 +681,7 @@ static DetectionInfo detect(File *in, uint64_t blockSize, const TransformOptions
         }
       }
       else { // pixel data
+
         if (textParserState == TextParserStateInfo::utf8Reject || // for any sign of non-text data in pixel area
           (pgm - 2 == 0 && n - pgmDataSize == i)) // or the image is the whole file/block -> FINISH (success)
         {
@@ -713,7 +725,8 @@ static DetectionInfo detect(File *in, uint64_t blockSize, const TransformOptions
       else if (p == 2 && c != 1) {
         rgbi = 0;
       }
-      else if (p == 4 && (buf0 & 0xffff) != 1 && (buf0 & 0xffff) != 2 && (buf0 & 0xffff) != 3) {
+      else if (p == 4 && (buf0 & 
+0xffff) != 1 && (buf0 & 0xffff) != 2 && (buf0 & 0xffff) != 3) {
         rgbi = 0;
       }
       else if (p == 6) {
@@ -753,7 +766,8 @@ static DetectionInfo detect(File *in, uint64_t blockSize, const TransformOptions
       int tifofval = 0; // 1 if strip offsets are already resolved (inline or read from array)
 
       // Tag 320 (ColorMap): only present for palette-color images (PhotometricInterpretation==3).
-      // Stores 3 * 2^BitsPerSample uint16 values: all R entries, then all G, then all B.
+      // Stores 3 * 2^BitsPerSample uint16 values: all R entries, t
+hen all G, then all B.
       int tifColorMapOfs = 0; // absolute file offset to the ColorMap data, 0 = absent
       int tifColorMapLen = 0; // number of palette entries per channel (e.g. 256 for 8-bit)
 
@@ -791,7 +805,8 @@ static DetectionInfo detect(File *in, uint64_t blockSize, const TransformOptions
             }
             else if (tag == 259) {
               tifC = tagVal; // Compression: 1 = uncompressed, 5 = LZW
-            }
+            
+}
             else if (tag == 273 && (tagFmt == 3 || tagFmt == 4)) {
               // StripOffsets: file offsets to each strip's data.
               // If tagLen == 1 the single value fits inline in the IFD entry.
@@ -830,7 +845,8 @@ static DetectionInfo detect(File *in, uint64_t blockSize, const TransformOptions
               const int bytesPerVal = (tagFmt == 3) ? 2 : 4; // SHORT or LONG
               if (tagLen == 1) {
                 tifStripSizes[0] = tagVal; // single strip, value is inline
-              }
+        
+      }
               else if (tagLen <= MAX_TIFF_STRIPS) {
                 // tagVal is the file offset to the array of strip byte counts
                 const uint64_t savedPos2 = in->curPos();
@@ -848,683 +864,6 @@ static DetectionInfo detect(File *in, uint64_t blockSize, const TransformOptions
               }
             }
             // ColorMap tag (320): only present for palette-color images
-            // (PhotometricInterpretation == 3).
-            // tagFmt == 3 (SHORT), tagLen == 3 * 2^BitsPerSample entries total
-            // (e.g. 768 for 8-bit: 256 R + 256 G + 256 B uint16 values).
-            // Since tagLen > 2 always for a valid palette, tagVal is a file offset
-            // to the palette data (doesn't fit inline in the 4-byte IFD value field).
-            else if (tag == 320 && tagFmt == 3 && tagLen > 2) {
-              tifColorMapOfs = tagVal;  // absolute file offset to the ColorMap data
-              tifColorMapLen = tagLen / 3; // entries per channel (e.g. 256 for 8-bit)
-            }
-          }
-        }
-      }
+            // (PhotometricInte
 
-      // Compute total compressed size across all strips
-      int tifTotalSize = 0;
-      for (int s = 0; s < tifStripCount; s++)
-        tifTotalSize += tifStripSizes[s];
-
-      const uint64_t tifofs = tifStripCount > 0 ? tifStripOffsets[0] : 0;
-
-      if ((tifX != 0) && (tifY != 0) && (tifZb != 0) && (tifZ == 1 || tifZ == 3) &&
-        ((tifC == 1) || (tifC == 5 && tifTotalSize > 0)) &&
-        (tifofs != 0) && tifofs < (1 << 18) && tifofs + i < n)
-      {
-        if (tifC == 1) {
-          // Uncompressed (BI_RGB): pixel data starts at tifofs
-          if (tifZ == 1 && tifZb == 1) {
-            detectionInfo.IMG_DET(start, BlockType::IMAGE1, i - 7, tifofs, ((tifX - 1) >> 3) + 1, tifY);
-            return detectionInfo;
-          }
-          if (tifZ == 1 && tifZb == 8) {
-            // 8-bit single channel: grayscale unless a ColorMap says otherwise
-            BlockType tifType = BlockType::IMAGE8GRAY; // default: no ColorMap = grayscale
-            if (tifColorMapOfs != 0 && tifColorMapLen > 0) {
-              // ColorMap is present: seek to it and inspect all entries.
-              // TIFF ColorMap layout is planar (all R, then all G, then all B),
-              // unlike interleaved RGB â so we use isTiffGrayscaleColorMap()
-              // rather than the generic isGrayscalePalette().
-              const uint64_t cmapEnd = static_cast<uint64_t>(tifColorMapOfs) + tifColorMapLen * 6u;
-              if (cmapEnd <= start + n) {
-                tifType = isTiffGrayscaleColorMap(in, tifColorMapOfs, tifColorMapLen)
-                  ? BlockType::IMAGE8GRAY
-                  : BlockType::IMAGE8;
-              }
-              else {
-                // ColorMap offset is past end of file: corrupted?
-              }
-            }
-            detectionInfo.IMG_DET(start, tifType, i - 7, tifofs, tifX, tifY);
-            return detectionInfo;
-          }
-          if (tifZ == 3 && tifZb == 8) {
-            detectionInfo.IMG_DET(start, BlockType::IMAGE24, i - 7, tifofs, tifX * 3, tifY);
-            return detectionInfo;
-          }
-        }
-        else if (tifC == 5 && tifTotalSize > 0) {
-          // LZW compressed: determine the image type and uncompressed row stride.
-          // Each strip is an independent LZW stream (with its own RESET and EOI codes),
-          // so multi-strip images are emitted one strip at a time via tiffStrips state.
-          int widthInBytes;
-          BlockType tifType;
-          if (tifZb == 1) {
-            tifType = BlockType::IMAGE1;
-            widthInBytes = ((tifX - 1) / 8 + 1) * tifZ; // ceil(width/8) bytes per row
-          }
-          else if (tifZb == 4) {
-            tifType = BlockType::IMAGE4;
-            widthInBytes = (tifX + 1) / 2 * tifZ; // ceil(width/2) bytes per row, 2 pixels per byte
-          }
-          else { // tifZb == 8
-            tifType = (tifZ == 1) ? BlockType::IMAGE8 : BlockType::IMAGE24;
-            widthInBytes = tifX * tifZ; // one byte per channel per pixel
-          }
-          // Pack image type into high byte and row stride into low 24 bits,
-          // matching the info encoding used by other image block types
-          const int info = (static_cast<int>(tifType) << 24) | widthInBytes;
-
-          if (tifStripCount == 1) {
-            // Single strip: emit directly, no static state needed
-            detectionInfo.Type = BlockType::LZW;
-            detectionInfo.DataInfo = info;
-            detectionInfo.DataStart = tifStripOffsets[0];
-            detectionInfo.DataLength = tifStripSizes[0];
-            return detectionInfo;
-          }
-          else {
-            // Multi-strip: TIFF does not guarantee strips are contiguous in the file.
-            // We only handle the contiguous case (strips laid out sequentially with
-            // no gaps), since the LZW decoder expects a single linear byte range.
-            // Non-contiguous strips fall through to DEFAULT.
-            bool contiguous = true;
-            for (int s = 1; s < tifStripCount; s++) {
-              if (tifStripOffsets[s] != tifStripOffsets[s - 1] + tifStripSizes[s - 1]) {
-                contiguous = false;
-                break;
-              }
-            }
-            if (contiguous) {
-              // Store all strips in static state and emit the first strip now.
-              // Subsequent detect() calls will emit strips 1..count-1 via the
-              // early-return block at the top of detect().
-              tiffStrips.count = tifStripCount;
-              tiffStrips.info = info;
-              tiffStrips.next = 1; // next call will emit strip 1
-              for (int s = 0; s < tifStripCount; s++) {
-                tiffStrips.offsets[s] = tifStripOffsets[s];
-                tiffStrips.sizes[s] = tifStripSizes[s];
-              }
-              detectionInfo.Type = BlockType::LZW;
-              detectionInfo.DataInfo = info;
-              detectionInfo.DataStart = tiffStrips.offsets[0];
-              detectionInfo.DataLength = tiffStrips.sizes[0];
-              return detectionInfo;
-            }
-            // Non-contiguous strips: fall through to savedPos restore
-          }
-        }
-      }
-      in->setpos(savedPos);
-    }
-
-    // Detect .tga image (8-bit 256 colors or 24-bit uncompressed)
-    if ((buf1 & 0xFFF7FF) == 0x00010100 && (buf0 & 0xFFFFFFC7) == 0x00000100 && (c == 16 || c == 24 || c == 32)) {
-      tga = i, tgax = tgay, tgaz = 8, tgat = (buf1 >> 8) & 0xF, tgaid = buf1 >> 24, tgamap = c / 8;
-    }
-    else if ((buf1 & 0xFFFFFF) == 0x00000200 && buf0 == 0x00000000) {
-      tga = i, tgax = tgay, tgaz = 24, tgat = 2;
-    }
-    else if ((buf1 & 0xFFF7FF) == 0x00000300 && buf0 == 0x00000000) {
-      tga = i, tgax = tgay, tgaz = 8, tgat = (buf1 >> 8) & 0xF;
-    }
-    if (tga != 0) {
-      if (i - tga == 8) {
-        tga = (buf1 == 0 ? tga : 0), tgax = (bswap(buf0) & 0xffff), tgay = (bswap(buf0) >> 16);
-      }
-      else if (i - tga == 10) {
-        if ((buf0 & 0xFFF7) == 32 << 8) {
-          tgaz = 32;
-        }
-        if ((tgaz << 8) == static_cast<int>(buf0 & 0xFFD7) && (tgax != 0) && (tgay != 0) && uint32_t(tgax * tgay) < 0xFFFFFFF) {
-          if (tgat == 1) {
-            in->setpos(start + tga + 11 + tgaid);
-            bool isGray = isGrayscalePalette(in);
-            detectionInfo.IMG_DET(start, isGray ? BlockType::IMAGE8GRAY : BlockType::IMAGE8, tga - 7, 18 + tgaid + 256 * tgamap, tgax, tgay);
-            if (detectionInfo.SizeVerificationPassed(start + n))
-              return detectionInfo;
-          }
-          if (tgat == 2) {
-            detectionInfo.IMG_DET(start, (tgaz == 24) ? BlockType::IMAGE24 : BlockType::IMAGE32, tga - 7, 18 + tgaid, tgax * (tgaz >> 3), tgay);
-            if (detectionInfo.SizeVerificationPassed(start + n))
-              return detectionInfo;
-          }
-          if (tgat == 3) {
-            detectionInfo.IMG_DET(start, BlockType::IMAGE8GRAY, tga - 7, 18 + tgaid, tgax, tgay);
-            if (detectionInfo.SizeVerificationPassed(start + n))
-              return detectionInfo;
-          }
-          if (tgat == 9 || tgat == 11) {
-            int info;
-            const uint64_t savedPos = in->curPos();
-            in->setpos(start + tga + 11 + tgaid);
-            if (tgat == 9) {
-              bool isGray = isGrayscalePalette(in);
-              info = (isGray ? BlockType::IMAGE8GRAY : BlockType::IMAGE8) << 24;
-              in->setpos(start + tga + 11 + tgaid + 256 * tgamap);
-            }
-            else {
-              info = BlockType::IMAGE8GRAY << 24;
-            }
-            info |= tgax;
-            // now detect compressed image data size
-            uint32_t detd = 0;
-            int c = in->getchar();
-            int b = 0;
-            int total = tgax * tgay;
-            int line = 0;
-            while (total > 0 && c >= 0 && (++detd, b = in->getchar()) >= 0) {
-              if (c == 0x80) {
-                c = b;
-                continue;
-              }
-              if (c > 0x7F) {
-                total -= (c = (c & 0x7F) + 1);
-                line += c;
-                c = in->getchar();
-                detd++;
-              }
-              else {
-                in->setpos(in->curPos() + c);
-                detd += ++c;
-                total -= c;
-                line += c;
-                c = in->getchar();
-              }
-              if (line > tgax) {
-                break;
-              }
-              if (line == tgax) {
-                line = 0;
-              }
-            }
-            if (total == 0) {
-              detectionInfo.Type = BlockType::RLE;
-              detectionInfo.DataInfo = info;
-              detectionInfo.DataStart = start + tga + 11 + tgaid + 256 * tgamap;
-              detectionInfo.DataLength = detd;
-              if (detectionInfo.SizeVerificationPassed(start + n))
-                return detectionInfo;
-            }
-            in->setpos(savedPos);
-          }
-        }
-        tga = 0;
-      }
-    }
-
-    static BlockType dett = BlockType::DEFAULT;
-
-    // Detect .gif
-    if (detectionInfo.Type == BlockType::DEFAULT && dett == BlockType::GIF && i == 0) {
-      dett = BlockType::DEFAULT;
-      if (c == 0x2c || c == 0x21) { //image section or extension block
-        gif = 2; // flag: image section or extension block
-        gifi = 2; //jump 2 bytes
-      }
-      else {
-        gifGray = 0;
-      }
-    }
-    if ((gif == 0) && (buf1 & 0xffff) == 0x4749 /*GI*/ && (buf0 == 0x46383961 /*F89a*/ || buf0 == 0x46383761 /*F87a*/)) {
-      gif = 1; // flag: found header
-      gifi = i + 5; // position after the header
-    }
-    if (gif != 0) { //we are in a GIF file
-      if (gif == 1 && i == gifi) {
-        gif = 2;
-        gifplt = (c & 128) != 0 ? (3 * (2 << (c & 7))) : 0;
-        gifi = i + 5 + gifplt;
-      }
-      if (gif == 2 && (gifplt != 0) && i == gifi - gifplt - 3) {
-        gifGray = isGrayscalePalette(in, gifplt / 3);
-        gifplt = 0;
-      }
-      if (gif == 2 && i == gifi) {
-        if ((buf0 & 0xff0000) == 0x210000) {
-          gif = 5;
-          gifi = i;
-        }
-        else if ((buf0 & 0xff0000) == 0x2c0000) {
-          gif = 3;
-          gifi = i;
-        }
-        else {
-          gif = 0; //failed
-        }
-      }
-      if (gif == 3 && i == gifi + 6) {
-        gifw = (bswap(buf0) & 0xffff);
-      }
-      if (gif == 3 && i == gifi + 7) {
-        gif = 4;
-        gifc = gifb = 0;
-        gifplt = (c & 128) != 0 ? (3 * (2 << (c & 7))) : 0;
-        gifa = gifi = i + 2 + gifplt;
-      }
-      if (gif == 4 && (gifplt != 0)) {
-        gifGray = isGrayscalePalette(in, gifplt / 3);
-        gifplt = 0;
-      }
-      if (gif == 4 && i == gifi) {
-        if (c > 0 && gifb != 0 && gifc != gifb) {
-          gifw = 0;
-        }
-        if (c > 0) {
-          gifb = gifc;
-          gifc = c;
-          gifi += c + 1;
-        }
-        else if (gifw == 0) {
-          gif = 2;
-          gifi = i + 3;
-        }
-        else {
-          dett = BlockType::GIF;
-          detectionInfo.Type = BlockType::GIF;
-          detectionInfo.DataStart = start + gifa - 1;
-          detectionInfo.DataLength = i - gifa + 2;
-          detectionInfo.DataInfo = ((gifGray ? BlockType::IMAGE8GRAY : BlockType::IMAGE8) << 24) | gifw;
-          return detectionInfo;
-        }
-      }
-      if (gif == 5 && i == gifi) {
-        if (c > 0) {
-          gifi += c + 1;
-        }
-        else {
-          gif = 2;
-          gifi = i + 3;
-        }
-      }
-    }
-
-
-  }
-  
-  if (detectionInfo.Type != BlockType::DEFAULT)
-    quit("detect(): detection didn't finish properly.");
-
-  //special detections (using hash signature)
-  //we could detect these *types* of content properly, but since
-  //they are rare, it's just much simpler to detect only those files 
-  //we are targeting
-
-  //printf("BlockHash: %" PRIu64 "\n", blockHash);
-
-  if (blockHash == UINT64_C(16175250862432333790) && blockSize == 513216) { //calgary/pic; canterbury/ptt5
-    detectionInfo.IMG_DET(start, BlockType::IMAGE1, 0, 0, 1728 / 8, 2376);
-    return detectionInfo;
-  }
-
-  //nothing detected
-  detectionInfo.Type = BlockType::DEFAULT;
-  detectionInfo.DataStart = start + n;
-  detectionInfo.DataLength = 0;
-
-  return detectionInfo;
-}
-
-#include "bmp.hpp"
-#include "rle.hpp"
-
-//////////////////// Compress, Decompress ////////////////////////////
-
-static void directEncodeBlock(BlockType type, File *in, uint64_t len, Encoder &en, int info) {
-  // TODO: Large file support
-  Block::EncodeBlockHeader(&en, type, len, info);
-  fprintf(stderr, "Compressing... ");
-  for( uint64_t j = 0; j < len; ++j ) {
-    if((j & 0xfff) == 0 ) {
-      en.printStatus(j, len);
-    }
-    en.compressByte(en.predictorMain, in->getchar());
-  }
-  fprintf(stderr, "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-}
-
-static void compressRecursive(File *in, uint64_t blockSize, Encoder &en, String &blstr, float p1, float p2, const TransformOptions* const transformOptions, const bool isTopLevel = true);
-
-static uint64_t decodeFunc(BlockType type, Encoder &en, File *tmp, uint64_t len, int info, File *out, FMode mode, uint64_t &diffFound, const TransformOptions* const transformOptions) {
-  if( type == BlockType::IMAGE24 ) {
-    auto f = BmpFilter();
-    f.setWidth(info);
-    f.setSkipRgb(transformOptions->skipRgb);
-    f.setEncoder(en);
-    return f.decode(tmp, out, mode, len, diffFound);
-  }
-  if( type == BlockType::IMAGE32 ) {
-    auto f = BmpFilter();
-    f.setWidth(info);
-    f.setSkipRgb(transformOptions->skipRgb);
-    f.setHasApha();
-    f.setEncoder(en);
-    return f.decode(tmp, out, mode, len, diffFound);
-  }
-  if (type == BlockType::PNG8GRAY || type == BlockType::PNG8 || type == BlockType::PNG24|| type == BlockType::PNG32) {
-    auto f = PngFilter();
-    f.setWidth(info);
-    auto stride = type == BlockType::PNG24 ? 3 : type == BlockType::PNG32 ? 4 : 1;
-    f.setStride(stride);
-    f.setEncoder(en);
-    return f.decode(tmp, out, mode, len, diffFound);
-  }
-  if( type == BlockType::ZLIB ) {
-    return decodeZlib(tmp, len, out, mode, diffFound);
-  }
-  else if( type == BlockType::GIF ) {
-    return decodeGif(tmp, len, out, mode, diffFound);
-  } else if( type == BlockType::RLE ) {
-    auto f = RleFilter();
-    //f.setScanLineSize(info & 0xFFFFFF); //now it self-encodes this info, but eventually we need to pass it
-    return f.decode(tmp, out, mode, len, diffFound);
-  } else if( type == BlockType::LZW ) {
-    return decodeLzw(tmp, out, mode, diffFound);
-  } else {
-    assert(false);
-  }
-  return 0;
-}
-
-static uint64_t encodeFunc(BlockType type, File *in, File *tmp, uint64_t len, int info, int &hdrsize, const TransformOptions* const transformOptions) {
-  if( type == BlockType::IMAGE24 ) {
-    auto f= BmpFilter();
-    f.setSkipRgb(transformOptions->skipRgb);
-    f.encode(in, tmp, len, info, hdrsize);
-  } else if( type == BlockType::IMAGE32 ) {
-    auto f = BmpFilter();
-    f.setSkipRgb(transformOptions->skipRgb);
-    f.setHasApha();
-    f.encode(in, tmp, len, info, hdrsize);
-  } else if (type == BlockType::PNG8GRAY || type == BlockType::PNG8 || type == BlockType::PNG24 || type == BlockType::PNG32) {
-    auto f = PngFilter();
-    auto stride = type == BlockType::PNG24 ? 3 : type == BlockType::PNG32 ? 4 : 1;
-    f.setStride(stride);
-    f.encode(in, tmp, len, info, hdrsize);
-  } else if( type == BlockType::ZLIB ) {
-    return encodeZlib(in, tmp, len, hdrsize) ? 0 : 1;
-  } else if( type == BlockType::GIF ) {
-    return encodeGif(in, tmp, len, hdrsize) != 0 ? 0 : 1;
-  } else if( type == BlockType::RLE ) {
-    auto f = RleFilter();
-    f.setScanLineSize(info & 0xFFFFFF);
-    f.encode(in, tmp, len, info, hdrsize);
-  } else if( type == BlockType::LZW ) {
-    return encodeLzw(in, tmp, len, hdrsize) != 0 ? 0 : 1;
-  } else {
-    assert(false);
-  }
-  return 0;
-}
-
-static void
-transformEncodeBlock(BlockType type, File *in, uint64_t len, Encoder &en, int info, String &blstr, float p1, float p2, uint64_t begin, const TransformOptions* const transformOptions) {
-  if( hasTransform(type, info)) {
-    FileTmp tmp;
-    int headerSize = 0;
-    uint64_t diffFound = encodeFunc(type, in, &tmp, len, info, headerSize, transformOptions);
-    const uint64_t tmpSize = tmp.curPos();
-    tmp.setpos(tmpSize); //switch to read mode
-    if( diffFound == 0 ) {
-      tmp.setpos(0);
-      en.setFile(&tmp);
-      in->setpos(begin);
-      decodeFunc(type, en, &tmp, tmpSize, info, in, FMode::FCOMPARE, diffFound, transformOptions);
-    }
-    // Test fails, compress without transform
-    if( diffFound > 0 || tmp.getchar() != EOF) {
-      printf("Transform fails at %" PRIu64 ", skipping...\n", diffFound - 1);
-      in->setpos(begin);
-      directEncodeBlock(BlockType::DEFAULT, in, len, en, -1);
-    } else {
-      tmp.setpos(0);
-      if( hasRecursion(type)) {
-        Block::EncodeBlockHeader(&en, type, tmpSize, info&0xffffff);
-        BlockType type2 = static_cast<BlockType>((info >> 24) & 0xFF);
-        if (isPNG(type)) {
-            type2 =
-                type == BlockType::PNG8GRAY ? BlockType::IMAGE8GRAY :
-                type == BlockType::PNG8 ? BlockType::IMAGE8 :
-                type == BlockType::PNG24 ? BlockType::IMAGE24 :
-                type == BlockType::PNG32 ? BlockType::IMAGE32 : BlockType::DEFAULT;
-        }
-        if( type2 != BlockType::DEFAULT ) {
-          String blstrSub0;
-          blstrSub0 += blstr.c_str();
-          blstrSub0 += "->";
-          String blstrSub1;
-          blstrSub1 += blstr.c_str();
-          blstrSub1 += "-->";
-          String blstrSub2;
-          blstrSub2 += blstr.c_str();
-          blstrSub2 += "-->";
-          const char* exploded = 
-                           "exploded    ";
-          const char* addedheader =
-            isPNG(type)  ? "filter data " : // PNG ->Image
-                           "added header";
-          const char* dataname =
-            isPNG(type2) ? "png data    " : // ZLIB -> PNG
-            isPNG(type)  ? "pixel data  " : // PNG  -> Image
-                           "data        ";
-          if(!isPNG(type))
-            printf(" %-11s | ->  %s |%10d bytes [%d - %d]\n", blstrSub0.c_str(), exploded, int(tmpSize), 0, int(tmpSize - 1));
-          if (headerSize != 0) {
-            printf(" %-11s | --> %s |%10d bytes [%d - %d]\n", blstrSub1.c_str(), addedheader, headerSize, 0, headerSize - 1);
-            directEncodeBlock(BlockType::HDR, &tmp, headerSize, en, -1);
-            printf(" %-11s | --> %s |%10d bytes [%d - %d]\n", blstrSub2.c_str(), dataname, int(tmpSize - headerSize), headerSize, int(tmpSize - 1));
-          }
-          transformEncodeBlock(type2, &tmp, tmpSize - headerSize, en, info & 0xffffff, blstr, p1, p2, headerSize, transformOptions);
-        } else {
-          compressRecursive(&tmp, tmpSize, en, blstr, p1, p2, transformOptions, /*isTopLevel: */ false);
-        }
-      } else {
-        directEncodeBlock(type, &tmp, tmpSize, en, info);
-      }
-    }
-    tmp.close();
-  } else {
-    directEncodeBlock(type, in, len, en, info);
-  }
-}
-
-static void composeSubBlockStringToPrint(String& blstr, String& blstrSub, int blNum) {
-  //Compose block enumeration string
-  blstrSub += blstr.c_str();
-  if (blstrSub.strsize() != 0) {
-    blstrSub += "-";
-  }
-  blstrSub += uint64_t(blNum);
-}
-
-
-static void printBlock(const uint64_t begin, const uint64_t len, const BlockType type, const int blockInfo, String& blstrSub) {
-  static const char* typeNames[(int)BlockType::Count] = { "default", "jpeg", "hdr", "1b-image", "4b-image", "8b-image", "8b-img-grayscale",
-                                                         "24b-image", "32b-image", "zlib", "gif", "png-8b", "png-8b-grayscale",
-                                                         "png-24b", "png-32b", "rle", "lzw" };
-
-  const char* typeName =
-    type == BlockType::ZLIB && isPNG(BlockType(blockInfo >> 24)) ? typeNames[blockInfo >> 24] :
-    typeNames[(int)type];
-  printf(" %-11s | %-16s |%10" PRIu64 " bytes [%" PRIu64 " - %" PRIu64 "]", blstrSub.c_str(), typeName, len, begin, (begin + len) - 1);
-  if (
-    type == BlockType::IMAGE1 ||
-    type == BlockType::IMAGE4 ||
-    type == BlockType::IMAGE8 ||
-    type == BlockType::IMAGE8GRAY ||
-    type == BlockType::IMAGE24 ||
-    type == BlockType::IMAGE32 ||
-    (type == BlockType::ZLIB && isPNG(BlockType(blockInfo >> 24)))) {
-    printf(" (width: %d)", (type == BlockType::ZLIB) ? (blockInfo & 0xFFFFFF) : blockInfo);
-  }
-  else if (hasRecursion(type) && (blockInfo >> 24) != (int)BlockType::DEFAULT) {
-      printf(" (%s)", typeNames[blockInfo >> 24]);
-  }
-  printf("\n");
-}
-
-static void compressBlock(File* in, const uint64_t begin, const uint64_t len, int &blNum, BlockType type, int blockInfo, Encoder& en, String& blstr, float &p1, float &p2, const float pscale, const TransformOptions* const transformOptions) {
-  p2 = p1 + pscale * len;
-  en.setStatusRange(p1, p2);
-
-  String blstrSub;
-  composeSubBlockStringToPrint(blstr, blstrSub, blNum);
-  printBlock(begin, len, type, blockInfo, blstrSub);
-  transformEncodeBlock(type, in, len, en, blockInfo, blstrSub, p1, p2, begin, transformOptions);
-  blNum++;
-
-  p1 = p2;
-}
-
-static void compressRecursive(File *in, uint64_t bytesToProcess, Encoder &en, String &blstr, float p1, float p2, const TransformOptions* const transformOptions, const bool isTopLevel) {
-
-  uint64_t begin = in->curPos();
-
-  float pscale = bytesToProcess != 0 ? (p2 - p1) / bytesToProcess : 0;
-
-  int blNum = 0;
-  while(bytesToProcess > 0 ) {
-
-    //detect a block 
-    DetectionInfo detectionInfo = detect(in, bytesToProcess, transformOptions); // Special blocktypes
-    in->setpos(begin);
-
-    //image-only gate: reject the input when the very first detection pass finds no image
-    //content at all, i.e. the whole file would be compressed as one generic (default) block
-    if (isTopLevel && blNum == 0 &&
-      detectionInfo.Type == BlockType::DEFAULT && detectionInfo.HeaderLength == 0 &&
-      detectionInfo.DataLength == 0 && detectionInfo.DataStart == begin + bytesToProcess) {
-      quit("Not a supported image file. Supported formats: JPEG, BMP, PNG, GIF, TIFF, TGA, PBM/PGM/PPM/PAM, raw RGB, HDR, FAX.");
-    }
-
-    uint64_t blockStart = detectionInfo.HeaderLength != 0 ? detectionInfo.HeaderStart : detectionInfo.DataStart;
-    while(blockStart != begin) {
-      const uint64_t gapLength = blockStart - begin;
-      compressBlock(in, begin, gapLength, /*ref: */ blNum, BlockType::DEFAULT, 0, en, /*in: */ blstr, /*ref: */ p1, /*ref: */ p2, pscale, transformOptions);
-      begin += gapLength;
-      bytesToProcess -= gapLength;
-    }
-
-    if (detectionInfo.HeaderLength != 0) {
-      compressBlock(in, detectionInfo.HeaderStart, detectionInfo.HeaderLength, /*ref: */ blNum, BlockType::HDR, 0, en, /*in: */ blstr, /*ref: */ p1, /*ref: */ p2, pscale, transformOptions);
-      begin += detectionInfo.HeaderLength;
-      bytesToProcess -= detectionInfo.HeaderLength;
-    }
-
-    if (begin != detectionInfo.DataStart)
-      quit("Internal error in compressRecursive");
-    
-    if (detectionInfo.DataLength != 0) {
-      compressBlock(in, detectionInfo.DataStart, detectionInfo.DataLength, /*ref: */ blNum, detectionInfo.Type, detectionInfo.DataInfo, en, /*in: */ blstr, /*ref: */ p1, /*ref: */ p2, pscale, transformOptions);
-      begin += detectionInfo.DataLength;
-      bytesToProcess -= detectionInfo.DataLength;
-    }
-  }
-}
-
-
-// Compress a file. Split fileSize bytes into blocks by type.
-// For each block, output
-// <type> <size> and call encode_X to convert to type X.
-// Test transform and compress.
-static void compressfile(const Shared* const shared, const char *filename, uint64_t fileSize, Encoder &en, bool verbose) {
-  assert(en.getMode() == COMPRESS);
-  assert(filename && filename[0]);
-
-  Block::EncodeBlockSize(&en, fileSize);
-
-  FileDisk in;
-  in.open(filename, true);
-  printf("Block segmentation:\n");
-  String blstr;
-  TransformOptions transformOptions(shared);
-  // detect block types + compress
-  compressRecursive(&in, fileSize, en, blstr, 0.0F, 1.0F, &transformOptions);
-  in.close();
-}
-
-static uint64_t decompressRecursive(File *out, uint64_t blockSize, Encoder &en, FMode mode, TransformOptions *transformOptions) {
-  uint64_t i = 0;
-  uint64_t diffFound = 0;
-  while( i < blockSize ) {
-
-    uint64_t len = Block::DecodeBlockHeader(&en);
-    BlockType type = en.predictorMain->shared->State.blockType;
-    int info = en.predictorMain->shared->State.blockInfo;
-    if( hasRecursion(type)) {
-      FileTmp tmp;
-      decompressRecursive(&tmp, len, en, FMode::FDECOMPRESS, transformOptions);
-      if( mode != FMode::FDISCARD ) {
-        tmp.setpos(0);
-        if( hasTransform(type, info)) {
-          len = decodeFunc(type, en, &tmp, len, info, out, mode, diffFound, transformOptions);
-        }
-      }
-      tmp.close();
-    } else if( hasTransform(type, info)) {
-      len = decodeFunc(type, en, nullptr, len, info, out, mode, diffFound, transformOptions);
-    } else {
-      for( uint64_t j = 0; j < len; ++j ) {
-        if((j & 0xfff) == 0 ) {
-          en.printStatus();
-        }
-        if( mode == FMode::FDECOMPRESS ) {
-          out->putChar(en.decompressByte(en.predictorMain));
-        } else if( mode == FMode::FCOMPARE ) {
-          if( en.decompressByte(en.predictorMain) != out->getchar() && (diffFound == 0)) {
-            mode = FMode::FDISCARD;
-            diffFound = i + j + 1;
-          }
-        } else {
-          en.decompressByte(en.predictorMain);
-        }
-      }
-    }
-    i += len;
-  }
-  return diffFound;
-}
-
-// Decompress or compare a file
-static void decompressFile(const Shared* const shared, const char* filename, FMode fMode, Encoder& en) {
-  assert(en.getMode() == DECOMPRESS);
-  assert(filename && filename[0]);
-
-  uint64_t fileSize = Block::DecodeBlockSize(&en);
-
-  FileDisk f;
-  if( fMode == FMode::FCOMPARE ) {
-    f.open(filename, true);
-    printf("Comparing");
-  } else { //mode==FDECOMPRESS;
-    f.create(filename);
-    printf("Extracting");
-  }
-  printf(" %s %" PRIu64 " bytes -> ", filename, fileSize);
-
-  // Decompress/Compare
-  TransformOptions transformOptions(shared);
-  uint64_t r = decompressRecursive(&f, fileSize, en, fMode, &transformOptions);
-  if( fMode == FMode::FCOMPARE && (r == 0) && f.getchar() != EOF) {
-    printf("file is longer\n");
-  } else if( fMode == FMode::FCOMPARE && (r != 0)) {
-    printf("differ at %" PRIu64 "\n", r - 1);
-  } else if( fMode == FMode::FCOMPARE ) {
-    printf("identical\n");
-  } else {
-    printf("done   \n");
-  }
-  f.close();
-}
+... [Content truncated]

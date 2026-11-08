@@ -1,4 +1,4 @@
-ï»¿#include "SSE.hpp"
+#include "SSE.hpp"
 #include "Hash.hpp"
 #include "Utils.hpp"
 
@@ -41,7 +41,8 @@
 //   cost. The input probability falls between two points, and the output is
 //   interpolated between their stored probabilities.
 //
-//   Every table starts out as (roughly) the identity map: output = input.
+//   Every table starts out as
+ (roughly) the identity map: output = input.
 //
 //   The two types differ in how fast they learn, which matters below:
 //
@@ -78,7 +79,8 @@
 //   learns.
 //
 //   Because it counts real outcomes, APMPost also recalibrates, but slowly,
-//   and only in cells that see a lot of traffic.
+//   and onl
+y in cells that see a lot of traffic.
 //
 // TWO WAYS TO AVERAGE PROBABILITIES
 //
@@ -121,7 +123,8 @@
 //      * an APM1 row that has just adapted to a short burst of unusual data,
 //      * an APM row still holding long-term statistics from data that has
 //        since changed.
-//    (A row that has seen little data is not a problem: it starts as the
+//    (A row that has seen little data is not a problem:
+ it starts as the
 //    identity map, so it simply passes its input through.)
 //
 //  - The estimates are strongly correlated. They all start from the same
@@ -157,7 +160,8 @@
 // 2010, doi:10.1111/j.1467-9868.2009.00726.x, Theorem 1.)
 //
 // The remedy the paper recommends has the same shape as this stage: a
-// linear average followed by a learned recalibration map. Here, in several
+// linear average followed by a learned recalibration map. 
+Here, in several
 // paths an APM1 takes an average (prA) as its input and learns, per context,
 // how that average relates to the actual outcomes, including sharpening it
 // when it is too timid. APMPost adds a slow, long-term correction on top.
@@ -203,7 +207,8 @@ Image{
     { /*ApmPostB: */ sh,8}
   },
   // bilevel:
-  { { /*APM:*/ {sh,1 << 10,20,1023}, {sh,1 << 16,20,1023}, {sh,41 * 8,20,1023}, {sh,64,20,1023} },
+  { { /*APM:*/ {sh,1 << 10,2
+0,1023}, {sh,1 << 16,20,1023}, {sh,41 * 8,20,1023}, {sh,64,20,1023} },
     { /*APM1:*/ {sh,1 << 16,6}, {sh,1 << 16,6}, {sh,1 << 16,6}},
     { /*ApmPostFinal: */ sh,16}
   }
@@ -259,7 +264,8 @@ uint32_t SSE::p(const uint32_t pr_orig) {
     uint32_t plane = shared->State.Image.plane; // 0..3
     uint32_t pr0 = Image.Color.APMs[0].p(pr_orig, plane << 5 | bpos << 2 | (bpos == 0 ? 0 : (misses3 & 3))); //7, even the plane could be enough
     uint32_t pr1 = Image.Color.APMs[1].p(pr_orig, finalize64(hash(c0, shared->State.Image.pixels.W, shared->State.Image.pixels.WW), 16)); //16
-    uint32_t pr2 = Image.Color.APMs[2].p(pr_orig, finalize64(hash(c0, shared->State.Image.pixels.N, shared->State.Image.pixels.NN), 16)); //16
+    uint32_t pr2 = Image.Col
+or.APMs[2].p(pr_orig, finalize64(hash(c0, shared->State.Image.pixels.N, shared->State.Image.pixels.NN), 16)); //16
     uint32_t pr3 = Image.Color.APMs[3].p(pr_orig, (c0 << 8) | shared->State.Image.ctx); //16
 
     uint32_t prA = (pr_orig + pr1 + pr2 + pr3 + 2) >> 2;
@@ -293,7 +299,8 @@ uint32_t SSE::p(const uint32_t pr_orig) {
 
     uint32_t prA = (pr_orig + pr1 + pr2 + pr3 + 2) >> 2;
 
-    uint32_t pr4 = Image.Palette.APM1s[0].p(prA, finalize64(hash(c0 | shared->State.Image.pixels.N << 8, shared->State.Match.expectedByte), 16)); //16
+    uint32_t pr4 = Image.Palette.APM1s
+[0].p(prA, finalize64(hash(c0 | shared->State.Image.pixels.N << 8, shared->State.Match.expectedByte), 16)); //16
     uint32_t pr5 = Image.Palette.APM1s[1].p(pr0, finalize64(hash(c0 | shared->State.Image.pixels.W << 8, shared->State.NormalModel.order), 16)); //16
 
     uint32_t prB = (pr0 * 2 + pr4 + pr5 + 2) >> 2;
@@ -331,7 +338,8 @@ uint32_t SSE::p(const uint32_t pr_orig) {
   }
   default: {
     uint32_t pr0 = Generic.APMs[0].p(pr_orig, shared->State.Match.length2 << 6 | static_cast<uint32_t>(bpos) << 3 | misses3); //8
-    uint32_t pr1 = Generic.APMs[1].p(pr_orig, shared->State.NormalModel.order << 5 | shared->State.Match.length2 << 3 | bpos); //8
+    uint32_t pr1 = Generic.APMs[1].p(pr_orig, shared->State.NormalModel.order
+ << 5 | shared->State.Match.length2 << 3 | bpos); //8
     uint32_t pr2 = Generic.APMs[2].p(pr_orig, c0 | (c4 & 0xFF) << 8); //16
     uint32_t pr3 = Generic.APMs[3].p(pr_orig, c0 << 8 | (c4 & 0xF0) | ((c4 & 0xF000) >> 12)); //16
 
