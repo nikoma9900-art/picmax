@@ -17,14 +17,8 @@ void NormalModel::updateHashes() {
   INJECT_SHARED_blockType
   uint64_t base_context = c1;
   BlockType normalizedBlockType = blockType;
-  /* todo: let blocktype represent simply the blocktype without any transformation used:
-      blockType == BlockType::AUDIO_LE = BlockType::AUDIO
-      blockType == BlockType::TEXT_EOL = BlockType::TEXT
-  */
-  if (isTEXT(blockType) || (blockType == BlockType::JPEG && shared->State.JPEG.state == 0))
+  if (blockType == BlockType::JPEG && shared->State.JPEG.state == 0)
     normalizedBlockType = BlockType::DEFAULT;
-  else if (blockType == BlockType::AUDIO_LE)
-    normalizedBlockType = BlockType::AUDIO;
   else if (blockType == BlockType::IMAGE24 || blockType == BlockType::IMAGE32) {
     base_context = base_context << 2 | shared->State.Image.plane;
   }
@@ -81,7 +75,11 @@ void NormalModel::mixPost(Mixer &m) {
   INJECT_SHARED_blockType
   m.set((c1 | (bpos > 5) << 8 | (((c0 & ((1u << bpos) - 1)) == 0) || (c0 == ((2u << bpos) - 1))) << 9), 1024);
   m.set(c0, 256);
-  uint32_t bt = blockType == BlockType::DEFAULT ? 0 : isTEXT(blockType) ? 1 : blockType == BlockType::EXE || blockType == BlockType::DEC_ALPHA ? 2 : 3;
+  // 0: generic, 1: JPEG, 2: raw image data, 3: container/stream block (HDR, ZLIB, GIF, PNG, RLE, LZW)
+  uint32_t bt = blockType == BlockType::DEFAULT ? 0 :
+                blockType == BlockType::JPEG ? 1 :
+                (static_cast<int>(blockType) >= static_cast<int>(BlockType::IMAGE1) &&
+                 static_cast<int>(blockType) <= static_cast<int>(BlockType::IMAGE32)) ? 2 : 3;
   m.set(shared->State.NormalModel.order | ((c1 >> 6) & 3) << 3 | (bpos == 0) << 5 | (c1 == c2) << 6 | bt << 7, 512);
   m.set(c2, 256);
   m.set(c3, 256);
