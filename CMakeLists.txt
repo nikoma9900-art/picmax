@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 project(paqimg LANGUAGES CXX C)
-set(CMAKE_POLICY_DEFAULT_CMP0009 NEW)  # Suppress GLOB warning
 
 # --------------------------------------
 # Build options
@@ -92,27 +91,9 @@ endif()
 target_include_directories(zlib_bundled PUBLIC ${ZLIB_DIR})
 
 # --------------------------------------
-# Collect source files
+# Executable: everything is in one file, paqimg.cpp
 # --------------------------------------
-set(PAQ_SOURCES "")
-
-# Directories to scan for cpp files
-set(SOURCE_DIRS
-    "${CMAKE_CURRENT_SOURCE_DIR}/src"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/file"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/filter"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/model"
-)
-
-foreach(DIR ${SOURCE_DIRS})
-    file(GLOB DIR_SOURCES "${DIR}/*.cpp")
-    list(APPEND PAQ_SOURCES ${DIR_SOURCES})
-endforeach()
-
-# --------------------------------------
-# Create executable
-# --------------------------------------
-add_executable(paqimg ${PAQ_SOURCES})
+add_executable(paqimg paqimg.cpp)
 
 # Disable RTTI
 target_compile_options(paqimg PRIVATE -fno-rtti)
@@ -138,25 +119,6 @@ endif()
 # --------------------------------------
 include(CheckIPOSupported)
 check_ipo_supported(RESULT supported OUTPUT error)
-if (supported)
-    message(STATUS "IPO / LTO enabled")
-    set_property(TARGET paqimg PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-
-    # Set MAKE for LTO
-    if (WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        set(CMAKE_CXX_COMPILER_LAUNCHER "")
-        set (ENV{MAKE} "mingw32-make")
-    endif()
-else()
-    message(STATUS "IPO / LTO not supported: <${error}>")
+if(supported)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
-
-# --------------------------------------
-# Build information
-# --------------------------------------
-message(STATUS "Build configuration:")
-message(STATUS "  NATIVECPU: ${NATIVECPU}")
-message(STATUS "  NDEBUG: ${NDEBUG}")
-message(STATUS "  ENABLE_WARNINGS: ${ENABLE_WARNINGS}")
-message(STATUS "  Architecture: ${CMAKE_SYSTEM_PROCESSOR}")
-message(STATUS "  C++ Standard: ${CMAKE_CXX_STANDARD}")
