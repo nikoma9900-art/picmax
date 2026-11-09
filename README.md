@@ -4,15 +4,15 @@
 
 **paqimg** is a specialized, high-ratio lossless image compressor derived from
 [paq8px](https://encode.su/threads/342-paq8px) (PAQ compression family). Everything not related
-to image compression has been removed: text models, x86/x64 executable models, audio models,
-pre-training, multi-file archives, brute-force DEFLATE detection and more are gone.
-What remains is a lean, focused tool that only accepts images.
+to image compression has been removed: text models, x86/x64 executable models, audio models, the
+LSTM neural network model, pre-training, multi-file archives, developer/test command line
+options and more are gone. What remains is a lean, focused tool that only accepts images.
 
 Supported image formats:
 
 | Format | Block type |
 | --- | --- |
-| BMP (uncompressed 24/32-bit) | IMAGE24 / IMAGE32 |
+| BMP (uncompressed 1/4/8/24/32-bit) | IMAGE1 / IMAGE4 / IMAGE8 / IMAGE8GRAY / IMAGE24 / IMAGE32 |
 | PBM, PGM, PPM (ASCII) | IMAGE1 / IMAGE8GRAY / IMAGE24 |
 | PGM RAW, PPM RAW | IMAGE8GRAY / IMAGE24 |
 | JPEG (baseline, progressive, lossless) | JPEG |
@@ -39,88 +39,33 @@ Decompress:
 paqimg -d image.png.paqimg1
 ```
 
-Test (decompress and compare):
-
-```
-paqimg -t image.png.paqimg1
-```
-
 ## Usage
 
 ```
 Usage:
-  to compress       ->   paqimg -LEVEL[FLAGS] [OPTIONS] INPUT [OUTPUT]
+  to compress       ->   paqimg -LEVEL[FLAGS] INPUT [OUTPUT]
   to decompress     ->   paqimg -d INPUT.paqimg1 [OUTPUT]
-  to test           ->   paqimg -t INPUT.paqimg1 [OUTPUT]
 
 LEVEL:
   -1 -2 -3 -4          | Compress using less memory
   -5 -6 -7 -8          | Use more memory
   -9 -10 -11 -12       | Use even more memory
   -0                   | Segment and transform only, no compression
-  -0L                  | Segment and transform then LSTM-only compression (alternative: -lstmonly)
 
 FLAGS:
-  L                    | Enable LSTM model
   S                    | Skip RGB color transform (images)
-
-LSTM-specific options:
-  -lstmlayers=N        | Number of LSTM layers (1..5, default 2)
-  -savelstm FILE       | Save learned LSTM model weights after compression
-  -loadlstm FILE       | Load LSTM model weights before compression/decompression
-
-Misc options:
-  -v                   | Verbose output
-  -log FILE            | Append compression results with runtime to log file
-  -simd MODE           | Override SIMD detection - expert only
 ```
 
 The archive gets the `.paqimg1` extension (`1` is the version). Run `paqimg -help` for detailed help.
 
 ## Compile
 
-### Linux (cmake, recommended)
+### Linux (cmake)
 
 ```
 sudo apt install gcc build-essential cmake
 cd paqimg/build
 ./build-linux-with-cmake.sh
-```
-
-### Linux (gcc)
-
-```
-sudo apt install gcc g++
-cd paqimg/build
-./build-linux-with-gcc.sh
-```
-
-### Linux (clang)
-
-```
-sudo apt install clang
-cd paqimg/build
-./build-linux-with-clang.sh
-```
-
-### Cross-compile for ARM (aarch64, e.g. cortex-a73)
-
-```
-sudo apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-cd paqimg/build
-./build-linux-cross-compile-aarch64.sh
-```
-
-### Windows (MinGW-w64)
-
-```
-build\build-mingw-w64-generic-publish.cmd
-```
-
-### Windows (MSYS2)
-
-```
-build\build-msys.sh
 ```
 
 zlib is bundled and always built (needed for PNG/deflate handling). C++17 and a C++17-compliant
@@ -136,7 +81,13 @@ compiler are required.
 - Multi-file archive mode, file lists (`@FILELIST`), archive listing (`-l`)
 - Brute-force DEFLATE detection, forced binary/text modes
 - Model training (`-B`, `-E`, `-T` flags)
-- Visual Studio project files and CHANGELOG/DOC maintenance overhead
+- The LSTM neural network model and all its options (`-L`, `-lstmonly`, `-lstmlayers`,
+  `-loadlstm`, `-savelstm`)
+- Developer/test command line options: `-t` (test mode), `-v` (verbose), `-log`, `-param=`,
+  `-simd`
+- Dead code: legacy ContextMap v1, double-precision OLS variants, orphaned BMP/RLE filter
+  classes, VLI and Clz helpers, Visual Studio project files
+- Extra build scripts (only the CMake build remains)
 
 ## Credits
 

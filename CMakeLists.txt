@@ -102,7 +102,6 @@ set(SOURCE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/file"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/filter"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/model"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/lstm"
 )
 
 foreach(DIR ${SOURCE_DIRS})

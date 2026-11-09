@@ -7,7 +7,6 @@
 #include "model/JpegModel.hpp"
 #include "model/MatchModel.hpp"
 #include "model/NormalModel.hpp"
-#include "lstm/LstmModelContainer.hpp"
 #include "model/IContextModel.hpp"
 #include "MixerFactory.hpp"
 
@@ -28,10 +27,4 @@ public:
   auto image8BitModel() -> Image8BitModel&;
   auto image4BitModel() -> Image4BitModel&;
   auto image1BitModel() -> Image1BitModel&;
-
-  auto lstmModelGeneric() -> LstmModelContainer&;
-  auto lstmModelImage1() -> LstmModelContainer&;
-  auto lstmModelImage4() -> LstmModelContainer&;
-  auto lstmModelImage8() -> LstmModelContainer&;
-  auto lstmModelImage24() -> LstmModelContainer&;
 };

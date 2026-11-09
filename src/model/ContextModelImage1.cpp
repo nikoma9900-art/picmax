@@ -10,22 +10,18 @@ private:
 
 public:
   ContextModelImage1(Shared* const sh, Models* const models, const MixerFactory* const mf) : shared(sh), models(models) {
-    const bool useLSTM = shared->GetOptionUseLSTM();
     m = mf->createMixer (
       1 +  //bias
       MatchModel::MIXERINPUTS + NormalModel::MIXERINPUTS + 
-      Image1BitModel::MIXERINPUTS +
-      (useLSTM ? LstmModelContainer::MIXERINPUTS : 0)
+      Image1BitModel::MIXERINPUTS
       ,
       MatchModel::MIXERCONTEXTS + NormalModel::MIXERCONTEXTS_PRE + NormalModel::MIXERCONTEXTS_POST +
-      Image1BitModel::MIXERCONTEXTS +
-      (useLSTM ? LstmModelContainer::MIXERCONTEXTS : 0)
+      Image1BitModel::MIXERCONTEXTS
       ,
       MatchModel::MIXERCONTEXTSETS + NormalModel::MIXERCONTEXTSETS_PRE + NormalModel::MIXERCONTEXTSETS_POST +
-      Image1BitModel::MIXERCONTEXTSETS +
-      (useLSTM ? LstmModelContainer::MIXERCONTEXTSETS : 0)
+      Image1BitModel::MIXERCONTEXTSETS
       ,
-      (useLSTM ? 1 : 0)
+      0
     );
     m->setScaleFactor(800, 360, 80);
   }
@@ -45,13 +41,6 @@ public:
 
     MatchModel& matchModel = models->matchModel();
     matchModel.mix(*m);
-
-    //is it useful?
-    const bool useLSTM = shared->GetOptionUseLSTM();
-    if (useLSTM) {
-      LstmModelContainer& lstmModel = models->lstmModelImage1();
-      lstmModel.mix(*m);
-    }
 
     Image1BitModel& image1BitModel = models->image1BitModel();
     image1BitModel.mix(*m);

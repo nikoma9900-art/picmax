@@ -13,25 +13,19 @@ private:
 
 public:
   ContextModelImage24(Shared* const sh, Models* const models, const MixerFactory* const mf) : shared(sh), models(models) {
-    const bool useLSTM = shared->GetOptionUseLSTM();
-
     int mixerinputs =
       MatchModel::MIXERINPUTS + NormalModel::MIXERINPUTS +
-      Image24BitModel::MIXERINPUTS +
-      (useLSTM ? LstmModelContainer::MIXERINPUTS : 0);
+      Image24BitModel::MIXERINPUTS;
     int mixerContexts =
       MatchModel::MIXERCONTEXTS + NormalModel::MIXERCONTEXTS_PRE +
-      Image24BitModel::MIXERCONTEXTS +
-      (useLSTM ? LstmModelContainer::MIXERCONTEXTS : 0);
+      Image24BitModel::MIXERCONTEXTS;
     int mixerContextSets =
       MatchModel::MIXERCONTEXTSETS + NormalModel::MIXERCONTEXTSETS_PRE +
-      Image24BitModel::MIXERCONTEXTSETS +
-      (useLSTM ? LstmModelContainer::MIXERCONTEXTSETS : 0);
-    int promotedInputs = (useLSTM ? 1 : 0);
+      Image24BitModel::MIXERCONTEXTSETS;
 
-    m0 = mf->createMixer(mixerinputs, mixerContexts, mixerContextSets, promotedInputs);
-    m1 = mf->createMixer(mixerinputs, mixerContexts, mixerContextSets, promotedInputs);
-    m2 = mf->createMixer(mixerinputs, mixerContexts, mixerContextSets, promotedInputs);
+    m0 = mf->createMixer(mixerinputs, mixerContexts, mixerContextSets, 0);
+    m1 = mf->createMixer(mixerinputs, mixerContexts, mixerContextSets, 0);
+    m2 = mf->createMixer(mixerinputs, mixerContexts, mixerContextSets, 0);
 
     m0->setScaleFactor(490, 180, 130);
     m1->setScaleFactor(620, 170, 135);
@@ -63,12 +57,6 @@ public:
 
     MatchModel& matchModel = models->matchModel();
     matchModel.mix(*m);
-
-    const bool useLSTM = shared->GetOptionUseLSTM();
-    if (useLSTM) {
-      LstmModelContainer& lstmModel = models->lstmModelImage24();
-      lstmModel.mix(*m);
-    }
 
     image24BitModel.mix(*m);
 

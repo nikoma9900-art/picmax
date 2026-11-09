@@ -10,19 +10,15 @@ private:
 
 public:
   ContextModelGeneric(Shared* const sh, Models* const models, const MixerFactory* const mf) : shared(sh), models(models) {
-    const bool useLSTM = shared->GetOptionUseLSTM();
     m = mf->createMixer(
       1 +  //bias
-      MatchModel::MIXERINPUTS + NormalModel::MIXERINPUTS +
-      (useLSTM ? LstmModelContainer::MIXERINPUTS : 0)
+      MatchModel::MIXERINPUTS + NormalModel::MIXERINPUTS
       ,
-      MatchModel::MIXERCONTEXTS + NormalModel::MIXERCONTEXTS_PRE + NormalModel::MIXERCONTEXTS_POST +
-      (useLSTM ? LstmModelContainer::MIXERCONTEXTS : 0)
+      MatchModel::MIXERCONTEXTS + NormalModel::MIXERCONTEXTS_PRE + NormalModel::MIXERCONTEXTS_POST
       ,
-      MatchModel::MIXERCONTEXTSETS + NormalModel::MIXERCONTEXTSETS_PRE + NormalModel::MIXERCONTEXTSETS_POST +
-      (useLSTM ? LstmModelContainer::MIXERCONTEXTSETS : 0)
+      MatchModel::MIXERCONTEXTSETS + NormalModel::MIXERCONTEXTSETS_PRE + NormalModel::MIXERCONTEXTSETS_POST
       ,
-      (useLSTM ? 1 : 0)
+      0
     );
     m->setScaleFactor(980, 130, 90);
     m->setLowerLimitOfLearningRate(7, 3, 2);
@@ -38,12 +34,6 @@ public:
 
     MatchModel& matchModel = models->matchModel();
     matchModel.mix(*m);
-
-    const bool useLSTM = shared->GetOptionUseLSTM();
-    if (useLSTM) {
-      LstmModelContainer& lstmModel = models->lstmModelGeneric();
-      lstmModel.mix(*m);
-    }
 
     return m->p();
   }

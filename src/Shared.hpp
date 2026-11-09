@@ -29,7 +29,6 @@ private:
 
   // compression/decompression options (these flags are stored in the archive)
   static constexpr uint8_t OPTION_SKIPRGB = 1;
-  static constexpr uint8_t OPTION_USELSTM = 2;
 
 public:
 
@@ -37,26 +36,16 @@ public:
 
   RingBuffer<uint8_t> buf; /**< Rotating input queue set by Predictor */
   uint8_t options = 0; /**< Compression options (bit field) */
-  SIMDType chosenSimd = SIMDType::SIMD_NONE; /**< default value, will be overridden by the CPU dispatcher, and may be overridden from the command line */
+  SIMDType chosenSimd = SIMDType::SIMD_NONE; /**< default value, will be overridden by the CPU dispatcher */
   uint8_t level = 0; /**< level=0: no compression (only transformations), level=1..12 compress using less..more RAM */
   uint64_t mem = 0; /**< pre-calculated value of 65536 * 2^level */
-  float tuning_param = 0.0f; /**< used during development to find optimal model parameters */
   bool toScreen = true;
 
   // Getters
   bool GetOptionSkipRGB() const { return (options & OPTION_SKIPRGB) != 0; }
-  bool GetOptionUseLSTM() const { return (options & OPTION_USELSTM) != 0; }
 
   // Setters
   void SetOptionSkipRGB() { options |= OPTION_SKIPRGB; }
-  void SetOptionUseLSTM() { options |= OPTION_USELSTM; }
-
-  struct
-  {
-    uint8_t hidden_size = 200;
-    uint8_t num_layers = 0; //  set from command line parameters with default = 2
-    uint8_t horizon = 100;
-  } LstmSettings;
 
   struct
   {
@@ -93,10 +82,10 @@ public:
     //MatchModel
     struct
     {
-      uint8_t length2;      //used by SSE stage and RecordModel
+      uint8_t length2;      //used by SSE stage
       uint8_t mode3;        //used by SSE stage 
       uint8_t mode5;        //used by SSE stage 
-      uint16_t expectedByte; //used by SSE stage and RecordModel; 0-256 where 256 = not valid
+      uint16_t expectedByte; //used by SSE stage; 0-256 where 256 = not valid
     } Match{};
 
     //NormalModel

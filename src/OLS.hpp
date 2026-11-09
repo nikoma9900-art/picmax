@@ -8,7 +8,7 @@
  * Exponentially-forgetting OLS (Ordinary Least Squares) predictor
  * Base class with reference implementations
  *
- * @tparam T floating-point type (float or double)
+ * @tparam T floating-point type (float)
  */
 
 template <typename T>
@@ -49,9 +49,6 @@ protected:
 
 // Explicit instantiation declarations
 extern template class OLS<float>;
-extern template class OLS<double>;
 
-// Convenience type aliases
+// Convenience type alias
 using OLS_float = OLS<float>;
-using OLS_double = OLS<double>;
-

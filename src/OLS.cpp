@@ -27,13 +27,9 @@ constexpr size_t OLS<T>::computePadding(size_t n) {
     // Pad to multiple of 4 for SSE (128-bit = 4 floats)
     return (n + 3) & ~3ULL;
   }
-  else if constexpr (std::is_same_v<T, double>) {
-    // Pad to multiple of 2 for SSE (128-bit = 2 doubles)
-    return (n + 1) & ~1ULL;
-  }
   else {
-    static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>,
-      "computePadding only supports float or double");
+    static_assert(std::is_same_v<T, float>,
+      "computePadding only supports float");
   }
 }
 
@@ -151,4 +147,3 @@ void OLS<T>::solve() {
 
 
 template class OLS<float>;
-template class OLS<double>;

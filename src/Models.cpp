@@ -57,30 +57,3 @@ auto Models::image1BitModel() -> Image1BitModel & {
   static Image1BitModel instance {shared};
   return instance;
 }
-
-//An LSTM model adapts slowly to new contents, so we'll have a separate LSTM model per main content type
-
-auto Models::lstmModelGeneric() -> LstmModelContainer& {
-  static LstmModelContainer* instance = new LstmModelContainer(shared);
-  return *instance;
-}
-
-auto Models::lstmModelImage1() -> LstmModelContainer& {
-  static LstmModelContainer* instance = new LstmModelContainer(shared);
-  return *instance;
-}
-
-auto Models::lstmModelImage4() -> LstmModelContainer& {
-  static LstmModelContainer* instance = new LstmModelContainer(shared);
-  return *instance;
-}
-
-auto Models::lstmModelImage8() -> LstmModelContainer& {
-  static LstmModelContainer* instance = new LstmModelContainer(shared);
-  return *instance;
-}
-
-auto Models::lstmModelImage24() -> LstmModelContainer& {
-  static LstmModelContainer* instance = new LstmModelContainer(shared);
-  return *instance;
-}
